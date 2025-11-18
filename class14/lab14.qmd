@@ -1,0 +1,273 @@
+---
+title: "Class 14: RNASeq mini project"
+author: "Junlin Ruan (PID: A17839687)"
+format: pdf
+toc: true
+---
+
+## Background 
+
+Here we work through a complete RNASeq analysis project. The input data comes from a knock-down experiment of a HOX genes
+
+## Data Import
+
+Reading the `counts` and `metadata` CSV files
+
+```{r}
+counts <- read.csv("GSE37704_featurecounts.csv", row.names = 1)
+metadata <- read.csv("GSE37704_metadata.csv")
+```
+
+
+Check on data structure
+
+```{r}
+head(counts)
+```
+
+```{r}
+metadata
+```
+
+Some book-keeping is required as there looks to be a mis-match between metadata rows and counts columns
+
+```{r}
+ncol(counts)
+```
+```{r}
+nrow(metadata)
+```
+Looks like we need to get rid of the first "length" column of our `counts` object
+
+> Q. Complete the code below to remove the troublesome first column from countData
+
+```{r} 
+cleancounts <- counts[,-1]
+```
+
+```{r}
+colnames(cleancounts)
+```
+```{r}
+metadata$id
+```
+
+```{r}
+all(colnames(cleancounts) == metadata$id)
+```
+
+
+### Remove zero count genes
+
+There are lots of genes with zero counts. We can remove these from further analysis.
+
+```{r}
+head(cleancounts)
+```
+
+> Q. Complete the code below to filter countData to exclude genes (i.e. rows) where we have 0 read count across all samples (i.e. columns).
+
+```{r}
+to.keep.inds <- rowSums(cleancounts) > 0
+nonzero_counts <- cleancounts[to.keep.inds,]
+```
+
+
+## DESeq analysis
+Load the package
+
+
+```{r, message=FALSE}
+library(DESeq2)
+```
+
+Setup DESeq
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = nonzero_counts,
+                              colData = metadata,
+                              design = ~condition)
+```
+
+Run DESeq
+```{r}
+dds <- DESeq(dds)
+```
+
+Get results
+```{r}
+res <- results(dds)
+```
+
+> Q. Call the summary() function on your results to get a sense of how many genes are up or down-regulated at the default 0.1 p-value cutoff.
+
+```{r}
+summary(res)
+```
+
+## Data Visualization
+
+Volcano plot
+
+```{r}
+library(ggplot2)
+
+ggplot(res) +
+  aes(log2FoldChange, -log(padj)) +
+  geom_point() 
+```
+
+> Q. Improve this plot by completing the below code, which adds color and axis labels
+
+```{r}
+# Make a color vector for all genes
+mycols <- rep("gray", nrow(res) )
+
+# Color red the genes with absolute fold change above 2
+mycols[ abs(res$log2FoldChange) > 2 ] <- "red"
+
+# Color blue those with adjusted p-value less than 0.01
+# and absolute fold change more than 2
+inds <- (res$padj < 0.01) & (abs(res$log2FoldChange) > 2)
+mycols[ inds ] <- "blue"
+
+plot( res$log2FoldChange, -log(res$padj),
+      col = mycols,
+      xlab = "Log2(FoldChange)", ylab = "-Log(P-value)" )
+```
+
+Add threshold lines for fold-change and P-value and color our subset of genes that make these threshold cut-offs in the plot
+
+```{r}
+mycols <- rep("gray", nrow(res))
+mycols[abs(res$log2FoldChange) > 2 & res$padj < 0.05] <- "blue"
+
+ggplot(res) +
+  aes(log2FoldChange, -log(padj), color = mycols) +
+  geom_point() +
+  geom_vline(xintercept = c(-2, 2), color = "red") +
+  geom_hline(yintercept = -log(0.05), color = "red") +
+  scale_color_identity()
+```
+
+
+## Add Annotation
+>Q. Use the mapIDs() function multiple times to add SYMBOL, ENTREZID and GENENAME annotation to our results by completing the code below.
+
+Add some symbols and entrez ids
+
+```{r}
+library(AnnotationDbi)
+library(org.Hs.eg.db)
+```
+
+```{r}
+columns(org.Hs.eg.db)
+```
+
+
+```{r}
+res$symbol <- mapIds(x = org.Hs.eg.db,
+                     keys = row.names(res),
+                     keytype = "ENSEMBL",
+                     column = "SYMBOL")
+
+res$entrez <- mapIds(x = org.Hs.eg.db,
+                     keys = row.names(res),
+                     keytype = "ENSEMBL",
+                     column = "ENTREZID")
+
+res$name <- mapIds(x = org.Hs.eg.db,
+                     keys = row.names(res),
+                     keytype = "ENSEMBL",
+                     column = "GENENAME")
+```
+
+> Q. Finally for this section let's reorder these results by adjusted p-value and save them to a CSV file in your current project directory.
+
+```{r}
+res = res[order(res$padj), ]
+write.csv(res, file = "deseq_results.csv")
+```
+
+
+## Pathway Analysis
+
+Run gene analysis
+
+```{r, message = FALSE}
+library(gage)
+library(gageData)
+library(pathview)
+```
+
+We need a named vector of fold-change values as input for gage
+
+```{r}
+foldchanges <- res$log2FoldChange
+names(foldchanges) <- res$entrez
+head(foldchanges)
+```
+
+```{r}
+data("kegg.sets.hs")
+
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+```
+
+```{r}
+attributes(keggres)
+```
+
+```{r}
+head(keggres$less, 5)
+```
+
+```{r}
+pathview(pathway.id="hsa04110", gene.data=foldchanges)
+```
+
+![](hsa04110.png)
+
+```{r}
+pathview(pathway.id = "hsa03030", gene.data = foldchanges)
+```
+
+![](hsa03030.png)
+### Gene Ontology (GO)
+Same analysis but using GO genesets rather than KEGG
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+
+# Focus on Biological Process subset of GO
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+lapply(gobpres, head)
+```
+```{r}
+head(gobpres$less, 4)
+```
+### Reactome
+
+Lots of folks like the reactome web interface,. You can also run this as an R funciton but lets look at the website first. < https://reactome.org/ >
+
+The website wants a text file wit one gene symbol per line of the genes you want to map to pathways.
+
+```{r}
+sig_genes <- res[res$padj <= 0.05 & !is.na(res$padj), ]$symbol
+head(sig_genes) #res$symbo
+```
+and write out to a file"
+```{r}
+write.table(sig_genes, file="significant_genes.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
+```
+
+
+## Save Our Results
+
+```{r}
+write.csv(res, file="myresults.csv")
+```
+

@@ -1,0 +1,47 @@
+---
+title: "HW6 Bio3D"
+author: 'Junlin Ruan (PID: A17839687)'
+date: "2025-10-20"
+output: pdf_document
+---
+## Input
+
+The function inputs structures of same or different proteins under different biological states of drug bound or not. 
+In detail the inputs examines selected protein chain and atom types to analyze.
+
+## Purpose
+
+The function performed with the process of extracting the B-factors from multiple PDB structures and plotting them for direct comparison. 
+As the B-factor reflect atomic mobility within the protein, examination of it can visualizes the structural flexibility differences in protein-drug interactions.
+
+## Output
+The output are B-factor vs resdue number plots where peaks/higher B-factors correlates to a higher degree of flexibility in a certain region.
+The multiple plots of kinase with drug or not and different kinase help us understand the impact to stabilitzation of the protein structure from the drug binding.
+
+```{r}
+library(bio3d)
+
+plot_bfactors <- function(pdb_ids, chain = "A", elety = "CA") {
+  if (!is.character(pdb_ids)) stop("pdb_ids must be a character vector.")
+
+  b_list <- list()
+
+  for (id in pdb_ids) {
+    pdb <- read.pdb(id)
+    pdb_trim <- trim.pdb(pdb, chain = chain, elety = elety)
+    b_vals <- pdb_trim$atom$b
+    b_list[[id]] <- b_vals
+    plotb3(b_vals,
+           sse = pdb_trim,
+           typ = "l",
+           ylab = "B-factor",
+           main = paste("B-factor profile:", id))
+  }
+  invisible(b_list)
+}
+```
+Run the examples:
+```{r}
+plot_bfactors(c("4AKE", "1AKE", "1E4Y"))
+```
+
