@@ -1,0 +1,163 @@
+---
+title: "Class 09: Structural Bioinformatics (pt. 1)"
+author: "Junlin Ruan (PID: A17839687)"
+format: html
+---
+
+The main database for structural biology is called the PDB. Let's have a look at what it contains:
+
+Download a CSV file from the PDB site (accessible from “Analyze” > “PDB Statistics” > “by Experimental Method and Molecular Type”. Move this CSV file into your RStudio project and use it to answer the following questions:
+
+```{r}
+stats <- read.csv("DataExportSummary.csv")
+stats
+```
+
+```{r}
+stats$Total
+```
+Oh, these are characters not numeric...
+
+```{r}
+as.numeric(sub(",","",stats$Total))
+```
+
+```{r stats, message=FALSE}
+
+library(readr)
+
+stats <- read_csv("DataExportSummary.csv")
+stats
+```
+```{r}
+n.total <- sum(stats$Total)
+n.total
+```
+
+
+> Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy. Give your answers to 2 significant figures.
+
+```{r}
+n.xray <- sum(stats$`X-ray`)
+percent.xray <- n.xray / n.total * 100
+round(percent.xray, 2)
+```
+
+```{r}
+n.em <- sum(stats$`EM`)
+percent.em <- n.em / n.total * 100
+round(percent.em, 2)
+```
+There are `r round(percent.xray, 2)` percent Xray structures in the PDB
+
+
+> Q2: What proportion of structures in the PDB are protein?
+
+
+```{r}
+n.proteinonly <- stats$Total[stats$`Molecular Type` == "Protein (only)"]
+percent.proteinonly <- n.proteinonly / n.total * 100
+round(percent.proteinonly,2)
+```
+
+> Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+![](Screenshot.png)
+There are 1150 HIV-1 protease structures in the current PDB.
+
+## Exploring PDB structures
+
+Package for structural bioinformatics
+```{r}
+library(bio3d)
+
+hiv <- read.pdb("1hsg")
+hiv
+```
+
+> Q7: How many amino acid residues are there in this pdb object? 
+
+198
+
+> Q8: Name one of the two non-protein residues? 
+
+HOH
+
+> Q9: How many protein chains are in this structure? 
+
+2
+
+Let's first use the Mol* viewer to explore this structure
+
+![My first view of HIV-PR](1HSG.png)
+And a view of the ligand (ball and stick) with catalytic ASP 25 amino-acids (spacefill) and all the water components
+
+![](1HSG-2.png)
+
+## PDB objects in R
+
+```{r}
+head(hiv$atom)
+```
+Extract the sequence
+```{r}
+pdbseq(hiv)
+```
+
+```{r}
+chainA_seq <- pdbseq(trim.pdb(hiv, chain = "A"))
+```
+
+I can interactively view these PDB objects in R with the new **bio3dView** package. This is not yet on CRAN.
+
+To install this I can setup **pak** package and use it to install **bio3dview** from GitHuub. In my console I first run
+
+install.packages("pak")
+pak::pak("bioboot/bio3dview)
+install.packages("NGLVieweR")
+
+```{r}
+library(bio3dview)
+library(NGLVieweR)
+
+view.pdb(hiv) |>
+  setSpin()
+```
+
+Change some settings
+
+```{r}
+sel <- atom.select(hiv, resno = 25)
+
+
+view.pdb(hiv, highlight = sel,
+         highlight.style = "spacefill",
+         colorScheme = "chain",
+         col=c("blue","orange"),
+         backgroundColor = "pink")
+```
+
+## Predict protein flexibility
+
+We can run a bioinformatics calculation to rpedict protein dynamics - i.e. functional motions.
+
+We will use the `nma()` function:
+```{r}
+adk <- read.pdb("6s36")
+adk
+```
+
+```{r}
+m <- nma(adk)
+plot(m)
+```
+
+Generate a "trajectory" of predicted motion
+```{r}
+mktrj(m, file = "ADK_nma.pdb")
+```
+
+```{r}
+view.nma(m)
+```
+
