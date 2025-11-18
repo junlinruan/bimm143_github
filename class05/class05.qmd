@@ -1,0 +1,203 @@
+---
+title: "Class 5: Data viz with ggplot"
+author: "Junlin Ruan (PID: A17839687)"
+format: pdf
+---
+
+Today we are exploring the **ggplot** package and how to make nice figures in R.
+
+There are lots of ways to make figures and plot in R. These include:
+
+- so called "base" R
+- and add on packages like **ggplot2**
+
+Here is a simple "base" R plot.
+
+```{r}
+head(cars)
+```
+
+We can simply pass to the 'plot()' function
+
+```{r}
+plot(cars)
+```
+
+> Key-point: Base R is quick but not so nice and simple looking in some folks' eyes.
+
+Let's see how we can plot this with **ggplot2**...
+
+1st I need to install this add-on package. For this we use the `install.packages()` function - **WE DO THIS IN THE CONSOLE, NOT our report**. This is a one time only deal.
+
+2nd We need to load the package with `library()` function every time we want to use it.
+
+```{r}
+library(ggplot2)
+ggplot(cars)
+```
+
+Every ggplot is composed of at least 3 layers:
+
+- **data** (i.e. a data.frame with the things you want to plot),
+- aesthetics **aes()** that map the columns of data to your plot features (i.e. aesthitics)
+- geoms like **geom_point()** that srt how the plot appears
+
+```{r}
+ggplot(cars) +
+  aes(x=speed, y=dist) +
+  geom_point()
+```
+```{r}
+hist(cars$speed)
+```
+
+> For simple "canned" graphs base R is quicker but as things get more custom and elaborate then ggplot wins out...
+
+Let's add more layers to our ggplot
+
+Add a line showing the relationship between x and y
+Add a title
+Add custom axis label "Speed (MPH)" and "Distance (ft)"
+Change the theme...
+
+```{r}
+ggplot(cars) +
+  aes(x=speed, y=dist) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE)+
+  labs(title="Silly plot of Speed vs Stoping distance", x="Speed (MPH)", y="Distance (ft)") +
+  theme_bw()
+```
+
+## Going further
+
+Read some gene expression data
+
+```{r}
+url <- "https://bioboot.github.io/bimm143_S20/class-material/up_down_expression.txt"
+genes <- read.delim(url)
+
+head(genes)
+```
+
+> Q1. How many genes are in this dataset?
+
+```{r}
+nrow(genes)
+```
+```{r}
+ncol(genes)
+```
+
+> Q2. How many "up" regulated genes are there?
+
+```{r}
+sum(genes$State == "up")
+```
+
+A useful function for counting up occurrences of things in a vector is the `table()` function.
+
+
+```{r}
+table(genes$State)
+```
+
+Make a v1 figure
+
+```{r}
+p <- ggplot(genes) +
+  aes(x=Condition1, 
+      y=Condition2, 
+      col=State) +
+  geom_point()
+
+p
+```
+
+```{r}
+p + 
+  scale_colour_manual(values=c("blue","gray","red"))+
+  labs(title="Expression changes upon drug treatment", 
+       x="Control (no drug)", 
+       y="Treatment (with drug)") +
+  theme_bw()
+```
+
+## More plotting
+
+Read in the gapminder dataset
+
+```{r}
+# File location online
+url <- "https://raw.githubusercontent.com/jennybc/gapminder/master/inst/extdata/gapminder.tsv"
+
+gapminder <- read.delim(url)
+```
+
+Lets have a wee peak
+
+```{r}
+head(gapminder, 3)
+```
+
+> Q4. How many different country values are in this dataset?
+
+```{r}
+nrow(gapminder)
+```
+
+```{r}
+length(table(gapminder$country))
+```
+
+> Q5. How many different continent values are in this dataset?
+
+```{r}
+unique(gapminder$continent)
+```
+```{r}
+ggplot(gapminder) +
+  aes(gdpPercap, lifeExp, col=continent) +
+  geom_point()
+```
+
+```{r}
+ggplot(gapminder) +
+  aes(gdpPercap, lifeExp, col=continent, label=country) +
+  geom_point() +
+  geom_text()
+```
+
+I can use the **ggrepel** package to make more sensible labels here.
+
+```{r}
+library(ggrepel)
+
+ggplot(gapminder) +
+  aes(gdpPercap, lifeExp, col=continent, label=country) +
+  geom_point() +
+  geom_text_repel()
+```
+
+I want a separate pannel per continent
+
+```{r}
+ggplot(gapminder) +
+  aes(gdpPercap, lifeExp, col=continent, label=country) +
+  geom_point() +
+  facet_wrap(~continent)
+```
+
+## Summary
+
+The main advantages of ggplot over base R plotting are:
+
+1. **Layered Grammar of Graphics**: ggplot uses a consistent, layered approach where you build plots by adding layers (data, aesthetics, geoms, themes, etc.), making complex plots easier to construct and modify [[1]](https://drive.google.com/file/d/1BYSWJLROqxA1YpuDhJkzUolhiZqiOOKg/view?usp=drivesdk), [[3]](https://drive.google.com/file/d/1tFqKg9_nhVMmKYfiM1CQKDS2PmPwLh8n/view?usp=drivesdk), [[5]](https://drive.google.com/file/d/15xXaaIcCWOc_x1gJLdySWOd_sfMXTiaw/view?usp=drivesdk).
+
+2. **Sensible Defaults**: ggplot provides attractive default styles and layouts, so your plots look polished without extensive tweaking. Base R requires more manual adjustment for publication-quality visuals [[1]](https://drive.google.com/file/d/1BYSWJLROqxA1YpuDhJkzUolhiZqiOOKg/view?usp=drivesdk), [[3]](https://drive.google.com/file/d/1tFqKg9_nhVMmKYfiM1CQKDS2PmPwLh8n/view?usp=drivesdk), [[5]](https://drive.google.com/file/d/15xXaaIcCWOc_x1gJLdySWOd_sfMXTiaw/view?usp=drivesdk).
+
+3. **Declarative Syntax**: You specify what you want to show (e.g., which variables map to which aesthetics), rather than how to draw each element. This makes code more readable and easier to maintain [[1]](https://drive.google.com/file/d/1BYSWJLROqxA1YpuDhJkzUolhiZqiOOKg/view?usp=drivesdk), [[3]](https://drive.google.com/file/d/1tFqKg9_nhVMmKYfiM1CQKDS2PmPwLh8n/view?usp=drivesdk), [[5]](https://drive.google.com/file/d/15xXaaIcCWOc_x1gJLdySWOd_sfMXTiaw/view?usp=drivesdk).
+
+4. **Customization and Scalability**: ggplot makes it straightforward to add layers (like color, shape, smoothing lines, annotations) and to combine multiple plots. Base R can be fiddly and time-consuming for these tasks [[1]](https://drive.google.com/file/d/1BYSWJLROqxA1YpuDhJkzUolhiZqiOOKg/view?usp=drivesdk), [[3]](https://drive.google.com/file/d/1tFqKg9_nhVMmKYfiM1CQKDS2PmPwLh8n/view?usp=drivesdk), [[5]](https://drive.google.com/file/d/15xXaaIcCWOc_x1gJLdySWOd_sfMXTiaw/view?usp=drivesdk).
+
+5. **Reproducibility**: ggplot code is modular and scriptable, making it easier to reproduce and share visualizations, especially in reports and collaborative projects [[1]](https://drive.google.com/file/d/1BYSWJLROqxA1YpuDhJkzUolhiZqiOOKg/view?usp=drivesdk), [[3]](https://drive.google.com/file/d/1tFqKg9_nhVMmKYfiM1CQKDS2PmPwLh8n/view?usp=drivesdk), [[5]](https://drive.google.com/file/d/15xXaaIcCWOc_x1gJLdySWOd_sfMXTiaw/view?usp=drivesdk).
