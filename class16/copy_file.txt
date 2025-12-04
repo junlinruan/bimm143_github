@@ -1,0 +1,13 @@
+This is a simple nano text editor that will be available on every unix machine - that is why I am showing it to you.
+
+pwd: print working dir (where am I basically)
+cd: change directory (move around the file system)
+ls: list out files and dirs
+mkdir: make a new fir (a.k.a. "folder")
+rm: remove files and folders (i.e. delete)
+nano: a basic text editor
+
+head: show the top lines of a file
+tail: show the bottom lines of a file
+cp: copy files or dirs
+mx: move or rename a file or dir

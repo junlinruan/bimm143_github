@@ -1,0 +1,22 @@
+---
+title: "Lab 16"
+author: "Junlin Ruan (PID: A17839687)"
+format: pdf
+---
+
+```{r}
+b <- read.table("my_results.tsv")
+
+colnames(b) <- c("qseqid", "sseqid", "pident", "length", "mismatch", "gapopen", "qstart", "qend", "sstart", "send", "evalue", "bitscore")
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(b, aes(pident, bitscore)) + geom_point(alpha=0.1) 
+```
+
+```{r}
+ggplot(b, aes((b$pident * (b$qend - b$qstart)), bitscore)) + geom_point(alpha=0.1) + geom_smooth()
+```
+
