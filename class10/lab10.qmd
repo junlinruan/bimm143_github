@@ -1,7 +1,7 @@
 ---
 title: "Class10: Halloween mini project"
 author: "Junlin Ruan (PID: A17839687)"
-format: pdf
+format: gfm
 toc: TRUE
 ---
 
