@@ -1,7 +1,7 @@
 ---
 title: "Lab 16"
 author: "Junlin Ruan (PID: A17839687)"
-format: pdf
+format: gfm
 ---
 
 ```{r}
