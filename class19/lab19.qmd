@@ -1,7 +1,7 @@
 ---
 title: "Class 19: Pertussis Mini Project"
 author: "Junlin Ruan (PID: A17839687)"
-format: pdf
+format: gfm
 ---
 
 ## Background
