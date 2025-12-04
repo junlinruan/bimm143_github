@@ -1,7 +1,7 @@
 ---
 title: "Class12: RNASeq analysis"
 author: "Junlin Ruan (PID: A17839687)"
-format: pdf
+format: gfm
 toc: true
 ---
 
