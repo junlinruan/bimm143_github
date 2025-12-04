@@ -46,7 +46,7 @@ The `sample()` function could be useful here.
 sample(1:10, size = 3)
 ```
 
-    [1] 3 4 7
+    [1] 7 9 3
 
 change this to work with the nucleotide A C G and T and return 3 of them
 
@@ -55,7 +55,7 @@ n <- c("A","C","G","T")
 sample(n, size = 15, replace = TRUE)
 ```
 
-     [1] "G" "C" "A" "G" "T" "G" "C" "C" "T" "A" "A" "G" "A" "C" "C"
+     [1] "C" "G" "T" "T" "C" "C" "A" "G" "T" "G" "T" "A" "T" "C" "T"
 
 Turn this snipet into a function that returns a user specified length
 DNA sequence. Let’s call it `generate_dna()`…
@@ -84,7 +84,7 @@ generate_dna(5)
 
     Well done you!
 
-    [1] "T" "A" "C" "G" "C"
+    [1] "A" "G" "G" "C" "C"
 
 ``` r
 s <- generate_dna(15)
@@ -96,7 +96,7 @@ s <- generate_dna(15)
 s
 ```
 
-     [1] "G" "C" "A" "G" "C" "G" "G" "C" "G" "A" "C" "T" "C" "A" "T"
+     [1] "T" "T" "A" "A" "T" "G" "A" "T" "C" "T" "A" "G" "G" "C" "G"
 
 I want the option to return a single element character vector with my
 sequence all together like this: “GGAGTAC”
@@ -107,7 +107,7 @@ generate_dna(10, fasta=TRUE)
 
     Well done you!
 
-    [1] "GGCATATAGG"
+    [1] "GTGGTCCGTG"
 
 ``` r
 generate_dna(10, fasta=FALSE)
@@ -115,7 +115,7 @@ generate_dna(10, fasta=FALSE)
 
     Well done you!
 
-     [1] "G" "G" "G" "G" "A" "T" "T" "C" "T" "C"
+     [1] "T" "T" "C" "C" "T" "A" "A" "G" "G" "T"
 
 ## A more advanced example
 
@@ -144,7 +144,7 @@ Try this out…
 generate_protein(10)
 ```
 
-    [1] "YFWSKLMVYH"
+    [1] "YCEMYAHSDI"
 
 > Q. Generate random protein sequences between lengths 5 and 12 amino
 > acids
@@ -153,13 +153,13 @@ generate_protein(10)
 generate_protein(5)
 ```
 
-    [1] "AKFMQ"
+    [1] "PLQTD"
 
 ``` r
 generate_protein(6)
 ```
 
-    [1] "APTPML"
+    [1] "QWILNT"
 
 One approach is to do this by brute face calling our function for each
 length 5 to 12.
@@ -180,28 +180,28 @@ for (i in seq_lengths) {
 ```
 
     >5
-    IACTV
+    KHYGN
     >6
-    PCGQKT
+    EILHIY
     >7
-    WSQIHPW
+    KYNTGNT
     >8
-    MIMYAMYQ
+    KGKLPMPH
     >9
-    NMKPAHNNN
+    FMSFQFGAE
     >10
-    ANNSRSGMIY
+    DPKLQWEFCT
     >11
-    LCCCVPNWLNG
+    LMSWCQFHTFP
     >12
-    YEPHPNTTADLQ
+    WFLGNHCTISDR
 
 ``` r
 sapply(5:12, generate_protein)
 ```
 
-    [1] "AEINQ"        "FFFWEC"       "VMAAYPE"      "RSWDNDEC"     "YFGNCEQAV"   
-    [6] "CQIPAPKCVN"   "LCQFGDIRGTH"  "DDDNIQDANDLT"
+    [1] "KANYE"        "PHSSKS"       "SVWLINE"      "FISHTVHI"     "MRCFFKSGS"   
+    [6] "LLHHQSCLAQ"   "WMPMWLCVIVQ"  "LDGCDSSLEQPQ"
 
 > **Key-point**: Writing functions in R is doable but not the easiest
 > thing. Starting with a working snippet of code and then using LLM
