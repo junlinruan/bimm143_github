@@ -1,7 +1,7 @@
 ---
 title: "Class 11: Structural Bioinformatics pt2"
 author: "Junlin Ruan (PID: A17839687)"
-format: pdf
+format: gfm
 ---
 
 ## AlphaFold DB
