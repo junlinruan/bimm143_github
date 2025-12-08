@@ -17,3 +17,4 @@ Classwork for [BIMM143 at UC San Diego](https://bioboot.github.io/bimm143_F25/) 
 - Class 17 [Genome informatics and high throughput sequencing](class17/lab17.pdf)
 - Class 18 Thanksgiving Holiday
 - Class 19 [Investigating pertussis resurgence mini project](class19/lab19.md)
+- [Find A Gene Project](Junlin_Ruan_Find_A_Gene_Project.pdf)
